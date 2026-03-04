@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --cream: #faf7f4;
+  }
+
+  html {
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--cream);
+  }
+
+  .dark html, html.dark {
+    background-color: #0c0a09;
+  }
+
+  .font-serif {
+    font-family: 'Lora', serif;
+  }
+}
+
+@layer utilities {
+  .bg-cream {
+    background-color: #faf7f4;
+  }
+
+  .hover\:scale-102:hover {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Smooth scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e7e5e4 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #e7e5e4;
+  border-radius: 4px;
+}
