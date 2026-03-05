@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
@@ -16,89 +17,110 @@ export default function Login() {
     setLoading(true)
     const { error } = await signIn(email, password)
     setLoading(false)
-    if (error) {
-      setError(error.message)
-    } else {
-      navigate('/dashboard')
-    }
+    if (error) setError(error.message)
+    else navigate('/dashboard')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream dark:bg-stone-950 px-4">
-      {/* Decorative blobs */}
-      <div className="absolute top-0 right-0 w-72 h-72 bg-rose-100 dark:bg-rose-900/10 rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/4" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-100 dark:bg-amber-900/10 rounded-full blur-3xl opacity-40 translate-y-1/3 -translate-x-1/4" />
+    <div
+      className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{ backgroundColor: 'var(--bg)' }}
+    >
+      {/* Decorative orbs */}
+      <div
+        className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-30 pointer-events-none"
+        style={{ backgroundColor: 'var(--brand)', transform: 'translate(40%, -40%)' }}
+      />
+      <div
+        className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none"
+        style={{ backgroundColor: 'var(--brand)', transform: 'translate(-40%, 40%)' }}
+      />
 
-      <div className="relative w-full max-w-sm">
+      <motion.div
+        className="relative w-full max-w-sm"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">💩</div>
-          <h1 className="font-serif text-3xl font-bold text-stone-800 dark:text-stone-100">
+          <motion.div
+            className="text-6xl mb-4"
+            animate={{ rotate: [0, -5, 5, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
+          >
+            💩
+          </motion.div>
+          <h1 className="font-display text-3xl" style={{ color: 'var(--text-primary)' }}>
             PopoCounter
           </h1>
-          <p className="text-stone-400 dark:text-stone-500 text-sm mt-1 italic">
+          <p className="text-sm mt-1 italic" style={{ color: 'var(--text-muted)' }}>
             Your wellness, tracked
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-stone-900 rounded-3xl shadow-xl shadow-stone-100 dark:shadow-stone-900 p-8 border border-stone-100 dark:border-stone-800">
-          <h2 className="font-serif text-xl text-stone-700 dark:text-stone-200 mb-6">
+        <div
+          className="rounded-4xl shadow-poop-lg p-8 border"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <h2 className="font-display text-xl mb-6" style={{ color: 'var(--text-primary)' }}>
             Welcome back
           </h2>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400">
+            <div
+              className="mb-4 p-3 rounded-xl text-xs font-semibold border"
+              style={{ backgroundColor: '#fee2e2', color: '#dc2626', borderColor: '#fca5a5' }}
+            >
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-2">
-                Email
-              </label>
+              <label className="label">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="you@example.com"
-                className="w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-200 px-4 py-3 text-sm placeholder:text-stone-300 dark:placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:focus:ring-rose-700"
+                className="input-field"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-2">
-                Password
-              </label>
+              <label className="label">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-200 px-4 py-3 text-sm placeholder:text-stone-300 dark:placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:focus:ring-rose-700"
+                className="input-field"
               />
             </div>
 
-            <button
+            <motion.button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl bg-rose-400 hover:bg-rose-500 dark:bg-rose-500 dark:hover:bg-rose-600 text-white font-semibold transition-all duration-200 shadow-md shadow-rose-100 dark:shadow-rose-900/30 disabled:opacity-60 active:scale-95"
+              whileTap={{ scale: 0.97 }}
+              className="w-full py-3.5 rounded-2xl font-bold text-white shadow-poop disabled:opacity-60"
+              style={{ backgroundColor: 'var(--brand)' }}
             >
               {loading ? 'Signing in…' : 'Sign in'}
-            </button>
+            </motion.button>
           </form>
         </div>
 
-        <p className="text-center mt-5 text-sm text-stone-400 dark:text-stone-500">
+        <p className="text-center mt-5 text-sm" style={{ color: 'var(--text-muted)' }}>
           New here?{' '}
-          <Link to="/signup" className="text-rose-400 hover:text-rose-500 font-semibold">
+          <Link to="/signup" className="font-bold" style={{ color: 'var(--brand)' }}>
             Create an account
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }

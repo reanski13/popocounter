@@ -1,65 +1,150 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── CSS Variables ──────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --cream: #faf7f4;
+    --bg:          #faf6f0;
+    --bg-card:     #ffffff;
+    --bg-subtle:   #f2ebe0;
+    --border:      #e8ddd0;
+    --text-primary:   #2c1a0e;
+    --text-secondary: #7a5c42;
+    --text-muted:     #a8896e;
+    --brand:       #b8782a;
+    --brand-light: #edd5b0;
+    --brand-dark:  #7d4a18;
+  }
+
+  .dark {
+    --bg:          #140c05;
+    --bg-card:     #1e0f04;
+    --bg-subtle:   #26180b;
+    --border:      #3d2614;
+    --text-primary:   #f5f0eb;
+    --text-secondary: #d0b89a;
+    --text-muted:     #7a5c42;
+    --brand:       #cc9850;
+    --brand-light: #5e3b22;
+    --brand-dark:  #e8ddd0;
   }
 
   html {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    background-color: var(--cream);
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg);
+    color: var(--text-primary);
   }
 
-  .dark html, html.dark {
-    background-color: #0c0a09;
+  body {
+    background-color: var(--bg);
   }
 
-  .font-serif {
-    font-family: 'Lora', serif;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    font-weight: 700;
   }
 }
 
+/* ─── Utility Classes ────────────────────────────────────────────────────── */
 @layer utilities {
-  .bg-cream {
-    background-color: #faf7f4;
+  .bg-app        { background-color: var(--bg); }
+  .bg-card       { background-color: var(--bg-card); }
+  .bg-subtle     { background-color: var(--bg-subtle); }
+  .border-app    { border-color: var(--border); }
+  .text-primary  { color: var(--text-primary); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted    { color: var(--text-muted); }
+  .text-brand    { color: var(--brand); }
+  .bg-brand      { background-color: var(--brand); }
+  .border-brand  { border-color: var(--brand); }
+
+  .font-display {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    font-weight: 700;
   }
 
-  .hover\:scale-102:hover {
-    transform: scale(1.02);
+  .hover\:scale-102:hover { transform: scale(1.02); }
+}
+
+/* ─── Component Classes ──────────────────────────────────────────────────── */
+@layer components {
+  .card {
+    @apply rounded-3xl border shadow-sm;
+    background-color: var(--bg-card);
+    border-color: var(--border);
+  }
+
+  .card-subtle {
+    @apply rounded-3xl border;
+    background-color: var(--bg-subtle);
+    border-color: var(--border);
+  }
+
+  .btn-primary {
+    @apply rounded-2xl font-semibold text-white transition-all duration-200 active:scale-95;
+    background-color: var(--brand);
+  }
+  .btn-primary:hover {
+    background-color: var(--brand-dark);
+  }
+
+  .input-field {
+    @apply w-full rounded-xl px-4 py-3 text-sm outline-none transition-all;
+    border: 1px solid var(--border);
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+  }
+  .input-field::placeholder {
+    color: var(--text-muted);
+  }
+  .input-field:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(184, 120, 42, 0.15);
+  }
+
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-widest mb-2;
+    color: var(--text-muted);
   }
 }
 
+/* ─── Animations ─────────────────────────────────────────────────────────── */
 @keyframes slide-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes poop-burst {
+  0%   { transform: scale(1) rotate(0deg); }
+  30%  { transform: scale(1.4) rotate(-10deg); }
+  60%  { transform: scale(0.9) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes streak-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(184, 120, 42, 0.3); }
+  50%       { box-shadow: 0 0 24px rgba(184, 120, 42, 0.7); }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
+.animate-slide-up  { animation: slide-up 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+.animate-fade-in   { animation: fade-in 0.4s ease forwards; }
+.animate-poop-burst { animation: poop-burst 0.5s ease forwards; }
+.animate-streak-glow { animation: streak-glow 2s ease-in-out infinite; }
 
-/* Smooth scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #e7e5e4 transparent;
-}
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+*::-webkit-scrollbar { width: 4px; }
+*::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }
 
-*::-webkit-scrollbar {
-  width: 4px;
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: #e7e5e4;
-  border-radius: 4px;
+/* ─── Canvas drawing tool ────────────────────────────────────────────────── */
+.drawing-canvas {
+  touch-action: none;
+  cursor: crosshair;
 }

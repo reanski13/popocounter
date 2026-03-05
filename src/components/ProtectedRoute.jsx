@@ -6,10 +6,10 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream dark:bg-stone-950">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>
         <div className="text-center">
-          <div className="text-4xl mb-3 animate-bounce">💩</div>
-          <p className="text-stone-400 font-serif italic text-sm">Loading…</p>
+          <div className="text-5xl mb-3 animate-float">💩</div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>Loading…</p>
         </div>
       </div>
     )

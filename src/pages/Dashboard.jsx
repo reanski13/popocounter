@@ -1,61 +1,96 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { usePoopEntries } from '../hooks/usePoopEntries'
 import { useDarkMode } from '../hooks/useDarkMode'
 import StatCard from '../components/StatCard'
+import StreakCard from '../components/StreakCard'
 import WeeklyChart from '../components/WeeklyChart'
 import MonthlyChart from '../components/MonthlyChart'
 import BristolChart from '../components/BristolChart'
 import RecentEntries from '../components/RecentEntries'
 import AddEntryModal from '../components/AddEntryModal'
 
+const TABS = [
+  { key: 'today', label: 'Today' },
+  { key: 'week',  label: 'Week'  },
+  { key: 'month', label: 'Month' },
+  { key: 'year',  label: 'Year'  },
+]
+
 export default function Dashboard() {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const [isDark, toggleDark] = useDarkMode()
   const [showModal, setShowModal] = useState(false)
-  const [activeTab, setActiveTab] = useState('today') // today | week | month | year
+  const [activeTab, setActiveTab] = useState('today')
 
   const {
     loading, error,
     todayCount, weekCount, monthCount, yearCount,
     avgPerDay, last7Days, monthlyData, bristolDistribution,
+    currentStreak, longestStreak,
     recentEntries, addEntry, deleteEntry,
   } = usePoopEntries()
 
-  const tabs = [
-    { key: 'today', label: 'Today' },
-    { key: 'week',  label: 'Week'  },
-    { key: 'month', label: 'Month' },
-    { key: 'year',  label: 'Year'  },
-  ]
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'friend'
+
+  const todayMessage = () => {
+    if (todayCount === 0) return 'No visits yet today'
+    if (todayCount === 1) return 'One visit so far 🌿'
+    if (todayCount === 2) return 'Twice today 👍'
+    if (todayCount <= 4)  return 'Very active today 💪'
+    return 'Quite the day! 🚨'
+  }
 
   return (
-    <div className="min-h-screen bg-cream dark:bg-stone-950 pb-32">
+    <div className="min-h-screen pb-36" style={{ backgroundColor: 'var(--bg)' }}>
 
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-40 bg-cream/80 dark:bg-stone-950/80 backdrop-blur-md border-b border-stone-100 dark:border-stone-800/50 px-4 py-3">
+      {/* ── Header ──────────────────────────────────────────────────── */}
+      <header
+        className="sticky top-0 z-40 backdrop-blur-md border-b px-4 py-3"
+        style={{
+          backgroundColor: 'rgba(var(--bg-card), 0.85)',
+          borderColor: 'var(--border)',
+          // CSS vars don't work in rgba, so we use direct value with opacity trick:
+          background: isDark
+            ? 'rgba(30,15,4,0.85)'
+            : 'rgba(250,246,240,0.85)',
+        }}
+      >
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
-            <h1 className="font-serif text-xl font-bold text-stone-800 dark:text-stone-100 leading-none">
+            <h1 className="font-display text-lg leading-none" style={{ color: 'var(--text-primary)' }}>
               PopoCounter 💩
             </h1>
-            <p className="text-[11px] text-stone-400 dark:text-stone-600 mt-0.5">
-              {user?.email}
+            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              Hey, {displayName}!
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Dark mode toggle */}
             <button
               onClick={toggleDark}
-              className="w-9 h-9 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-base shadow-sm hover:scale-105 transition-transform"
+              className="w-9 h-9 rounded-xl border flex items-center justify-center text-sm shadow-sm transition-transform hover:scale-105"
+              style={{ backgroundColor: 'var(--bg-subtle)', borderColor: 'var(--border)' }}
               title="Toggle dark mode"
             >
               {isDark ? '☀️' : '🌙'}
             </button>
-            {/* Sign out */}
+            <Link
+              to="/profile"
+              className="w-9 h-9 rounded-xl border flex items-center justify-center text-sm shadow-sm transition-transform hover:scale-105"
+              style={{ backgroundColor: 'var(--bg-subtle)', borderColor: 'var(--border)' }}
+              title="Profile settings"
+            >
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} className="w-full h-full rounded-xl object-cover" alt="avatar" />
+                : '👤'
+              }
+            </Link>
             <button
               onClick={signOut}
-              className="w-9 h-9 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-base shadow-sm hover:scale-105 transition-transform"
+              className="w-9 h-9 rounded-xl border flex items-center justify-center text-sm shadow-sm transition-transform hover:scale-105"
+              style={{ backgroundColor: 'var(--bg-subtle)', borderColor: 'var(--border)' }}
               title="Sign out"
             >
               👋
@@ -64,111 +99,143 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 pt-5 space-y-5">
+      <main className="max-w-lg mx-auto px-4 pt-5 space-y-4">
 
-        {/* Hero today count */}
-        <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-100 dark:border-stone-800 shadow-sm p-6 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-amber-50 dark:from-rose-900/10 dark:to-amber-900/10 opacity-60" />
+        {/* ── Hero Counter ─────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="card p-6 text-center relative overflow-hidden"
+        >
+          {/* Decorative glow */}
+          <div
+            className="absolute inset-0 opacity-30"
+            style={{
+              background: 'radial-gradient(circle at 50% 0%, var(--brand) 0%, transparent 70%)',
+            }}
+          />
           <div className="relative">
-            <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-2">
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
               Today's Count
             </p>
-            <div className="font-serif text-8xl font-bold text-rose-400 dark:text-rose-400 leading-none mb-1">
-              {loading ? '…' : todayCount}
-            </div>
-            <p className="text-sm text-stone-400 dark:text-stone-500">
-              {todayCount === 0 && 'No visits yet today'}
-              {todayCount === 1 && 'One visit so far 🌿'}
-              {todayCount === 2 && 'Twice today 👍'}
-              {todayCount >= 3 && todayCount <= 4 && 'Very active today 💪'}
-              {todayCount >= 5 && 'Quite the day! 🚨'}
+            {loading ? (
+              <div className="h-24 flex items-center justify-center">
+                <div className="text-3xl animate-float">💩</div>
+              </div>
+            ) : (
+              <motion.div
+                key={todayCount}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="font-display font-black text-8xl leading-none mb-2"
+                style={{ color: 'var(--brand)' }}
+              >
+                {todayCount}
+              </motion.div>
+            )}
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              {todayMessage()}
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Tab stats */}
-        <div className="flex bg-white dark:bg-stone-800/60 rounded-2xl p-1 border border-stone-100 dark:border-stone-700/50 shadow-sm gap-1">
-          {tabs.map(tab => (
+        {/* ── Streak Card ──────────────────────────────────────────── */}
+        <StreakCard
+          currentStreak={currentStreak}
+          longestStreak={longestStreak}
+          displayName={displayName}
+        />
+
+        {/* ── Tab Switcher ─────────────────────────────────────────── */}
+        <div
+          className="flex rounded-2xl p-1 border gap-1"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          {TABS.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`
-                flex-1 py-2 rounded-xl text-xs font-semibold transition-all duration-150
-                ${activeTab === tab.key
-                  ? 'bg-rose-400 dark:bg-rose-500 text-white shadow-sm'
-                  : 'text-stone-400 dark:text-stone-500 hover:text-stone-600'
-                }
-              `}
+              className="flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-150"
+              style={{
+                backgroundColor: activeTab === tab.key ? 'var(--brand)' : 'transparent',
+                color: activeTab === tab.key ? 'white' : 'var(--text-muted)',
+              }}
             >
               {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Stat cards */}
-        {activeTab === 'today' && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard label="Today" value={todayCount} accent large subtitle="visits" />
-            <StatCard label="Daily Avg" value={avgPerDay} subtitle={`this month`} />
-          </div>
-        )}
-        {activeTab === 'week' && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard label="This Week" value={weekCount} accent subtitle="visits" />
-            <StatCard label="Daily Avg" value={(weekCount / 7).toFixed(1)} subtitle="per day" />
-          </div>
-        )}
-        {activeTab === 'month' && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard label="This Month" value={monthCount} accent subtitle="visits" />
-            <StatCard label="Daily Avg" value={avgPerDay} subtitle="per day" />
-          </div>
-        )}
-        {activeTab === 'year' && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard label="This Year" value={yearCount} accent subtitle="total visits" />
-            <StatCard label="Monthly Avg" value={(yearCount / (new Date().getMonth() + 1)).toFixed(1)} subtitle="per month" />
-          </div>
-        )}
+        {/* ── Stat Cards ───────────────────────────────────────────── */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-2 gap-3"
+          >
+            {activeTab === 'today' && <>
+              <StatCard label="Today" value={todayCount} subtitle="visits" accent icon="💩" />
+              <StatCard label="Daily Avg" value={avgPerDay} subtitle="this month" icon="📊" />
+            </>}
+            {activeTab === 'week' && <>
+              <StatCard label="This Week" value={weekCount} subtitle="visits" accent icon="📅" />
+              <StatCard label="Daily Avg" value={(weekCount / 7).toFixed(1)} subtitle="per day" icon="📊" />
+            </>}
+            {activeTab === 'month' && <>
+              <StatCard label="This Month" value={monthCount} subtitle="visits" accent icon="🗓️" />
+              <StatCard label="Daily Avg" value={avgPerDay} subtitle="per day" icon="📊" />
+            </>}
+            {activeTab === 'year' && <>
+              <StatCard label="This Year" value={yearCount} subtitle="total" accent icon="🏆" />
+              <StatCard label="Monthly Avg" value={(yearCount / (new Date().getMonth() + 1)).toFixed(1)} subtitle="per month" icon="📊" />
+            </>}
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Charts */}
+        {/* ── Charts ───────────────────────────────────────────────── */}
         <WeeklyChart data={last7Days} />
         <MonthlyChart data={monthlyData} />
         <BristolChart data={bristolDistribution} />
         <RecentEntries entries={recentEntries} onDelete={deleteEntry} />
 
         {error && (
-          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-xs text-red-500 text-center">
+          <div
+            className="p-3 rounded-xl text-xs text-center"
+            style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}
+          >
             {error}
           </div>
         )}
       </main>
 
-      {/* Floating Add Button */}
+      {/* ── FAB ──────────────────────────────────────────────────────── */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-30">
-        <button
+        <motion.button
           onClick={() => setShowModal(true)}
-          className="
-            flex items-center gap-2 px-7 py-4 rounded-full
-            bg-rose-400 hover:bg-rose-500 dark:bg-rose-500 dark:hover:bg-rose-600
-            text-white font-bold text-base
-            shadow-2xl shadow-rose-200 dark:shadow-rose-900/40
-            active:scale-95 transition-all duration-200
-            hover:shadow-rose-300 dark:hover:shadow-rose-800/50
-          "
+          whileTap={{ scale: 0.94 }}
+          whileHover={{ scale: 1.05 }}
+          className="flex items-center gap-2 px-7 py-4 rounded-full text-white font-bold text-base shadow-poop-lg"
+          style={{ backgroundColor: 'var(--brand)' }}
         >
           <span className="text-xl">💩</span>
           Log a Visit
-        </button>
+        </motion.button>
       </div>
 
-      {/* Add Entry Modal */}
-      {showModal && (
-        <AddEntryModal
-          onAdd={addEntry}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+      {/* ── Modal ────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showModal && (
+          <AddEntryModal
+            onAdd={addEntry}
+            onClose={() => setShowModal(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
